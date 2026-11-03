@@ -22,10 +22,10 @@
 /// unbound; the app logs the unbound actions after every reload so the
 /// slip is visible in `log show`.
 public struct ConfigFile: Codable, Equatable, Sendable {
-    /// Written by the app and decoded, but not checked against anything.
-    /// A version check and migrations arrive with the decision to freeze
-    /// the file format; until then an old file is deleted or edited by
-    /// hand.
+    /// The file format's version. `Config(validating:)` accepts only
+    /// `Config.fileVersion`, or no `version` key at all, which it reads as
+    /// that version. Any other number is refused with
+    /// `ConfigError.unsupportedVersion`.
     public var version: Int?
     /// Absent means the Dock shortcuts are off.
     public var dock: Dock?
@@ -253,6 +253,13 @@ public struct Config: Equatable, Sendable {
     static let defaultGridHotkey = "ctrl+alt+space"
     public static let defaultGridSize = 6
 
+    /// The one file format this build reads, frozen at 1.0.0. A key may
+    /// be added under version 1 when a file without it still means what
+    /// it meant; renaming, removing, or changing the meaning of a key
+    /// raises the number. `defaultJSON` writes this number, and a test
+    /// checks that the two agree.
+    public static let fileVersion = 1
+
     /// The hotkey text `Config.default` binds to each window action. The
     /// moves are ⌃⌥ with the arrow that names their direction and the
     /// sweeps add ⇧ to the same arrow; the display jumps are ⌃⌥ with `,`
@@ -331,6 +338,10 @@ public struct Config: Equatable, Sendable {
     /// Builds the settings from a decoded file, then checks the rules.
     /// Throws `ConfigError` naming the JSON field at fault.
     ///
+    /// A `version` other than `fileVersion` is refused first, with
+    /// `ConfigError.unsupportedVersion`; a missing `version` is read as
+    /// `fileVersion`, so a file written by hand does not need one.
+    ///
     /// A section that is absent is off. Inside a present `dock` section a
     /// missing field takes its default (`enabled` true, `modifiers`
     /// `defaultDockModifiers`, that is `ctrl+alt`, `highlight` true); inside a present
@@ -345,6 +356,12 @@ public struct Config: Equatable, Sendable {
     /// rejected with `ConfigError.removedField` so the person editing the
     /// file learns the new name instead of getting the default silently.
     public init(validating file: ConfigFile) throws {
+        // Checked before anything else: in a file of another format, the
+        // other fields may mean something this build does not know.
+        if let version = file.version, version != Config.fileVersion {
+            throw ConfigError.unsupportedVersion(version, supported: Config.fileVersion)
+        }
+
         if let dock = file.dock {
             dockEnabled = dock.enabled ?? true
             if let text = dock.modifiers {
@@ -510,6 +527,9 @@ public enum ConfigError: Error, Equatable, Sendable, CustomStringConvertible {
     /// does its job now, as text for the message ("grid.size",
     /// "window.sweepUp and window.sweepDown"), or nil when nothing does.
     case removedField(field: String, replacement: String?)
+    /// The file's `version` is not the one file format this build reads,
+    /// `supported` (`Config.fileVersion`).
+    case unsupportedVersion(Int, supported: Int)
 
     public var description: String {
         switch self {
@@ -522,6 +542,8 @@ public enum ConfigError: Error, Equatable, Sendable, CustomStringConvertible {
                 return "\(field) was replaced by \(replacement); remove \(field)"
             }
             return "\(field) was removed; delete it from the file"
+        case .unsupportedVersion(let version, let supported):
+            return "version: \(version) is not supported; this KeyGrid reads version \(supported)"
         case .duplicateHotkey(let hotkey, let fields):
             return "\(hotkey) is bound twice: \(fields.joined(separator: ", "))"
         }

@@ -263,16 +263,20 @@ first launch with these contents:
 
 The file is the whole truth. A section that is not in the file is off: no
 `dock` section means no Dock shortcuts, no `window` section means no
-window shortcuts, no `grid` section means no grid. `version` is
-reserved; leave it. Nothing is stored anywhere but the file: no
-UserDefaults, no cache. The one thing the app remembers that is not in
+window shortcuts, no `grid` section means no grid. `version` is the
+file format, frozen at 1 since KeyGrid 1.0.0; a file without it is read
+as version 1, and any other number is refused with `version: 2 is not
+supported; this KeyGrid reads version 1`. Nothing is stored anywhere
+but the file: no UserDefaults, no cache. The one thing the app remembers that is not in
 the file lives only in memory and is gone when it quits: the frames
 windows had before ⌃⌥⏎ filled them, so a second ⌃⌥⏎ can put them back.
 Launch at login is not a setting of KeyGrid's either: the menu item
 adds or removes an entry in macOS's own Login Items list, which System
-Settings shows and can change without KeyGrid. Until the file format
-is frozen, a decision that comes after v1.0, a new version may add keys;
-delete the file to get a fresh default, or add the keys by hand.
+Settings shows and can change without KeyGrid. Under version 1 a later
+KeyGrid may add keys but never renames, removes or changes the meaning
+of one, so a file that works today keeps working and means the same
+thing. To use a new key, add it by hand or delete the file to get a
+fresh default.
 
 ### Dock
 
