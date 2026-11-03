@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- KeyGrid's icon: a rounded square border with nine dots, in an
+     18-unit square. The menu bar PNGs are this drawing in black at 18 and
+     36 pixels: MenuBarIcon without the corner mark and without the mask,
+     MenuBarIconBadge with the badge group as it stands here, and
+     MenuBarIconProblem with the badge circle and the clearing circle
+     replaced by the two pieces written out in the comment at the end. The app icon
+     KeyGrid.icns is the plain drawing in dark slate (#2B3340) at 16 to
+     1024 pixels. See docs/work/42-icon.md for how the files were rendered. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" width="18" height="18">
+  <defs>
+    <!-- The ring cleared around the badge, radius 4.3. -->
+    <mask id="clearing"><rect width="18" height="18" fill="#fff"/><circle cx="14.5" cy="14.5" r="4.3" fill="#000"/></mask>
+  </defs>
+  <!-- The board. This is the badged version: the mask cuts the ring out of
+       the border. For the plain image drop the mask attribute and the
+       badge group below. -->
+  <g mask="url(#clearing)">
+  <!-- Border: stroke 1.5 inset by 0.75, so its outside sits on the icon's edge. -->
+  <rect x="0.75" y="0.75" width="16.5" height="16.5" rx="3.5" fill="none" stroke="#000" stroke-width="1.5"/>
+  <!-- Nine dots of radius 1.5 on a 4-unit pitch, centred. -->
+  <g fill="#000">
+    <circle cx="5" cy="5" r="1.5"/><circle cx="9" cy="5" r="1.5"/><circle cx="13" cy="5" r="1.5"/>
+    <circle cx="5" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="13" cy="9" r="1.5"/>
+    <circle cx="5" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/><circle cx="13" cy="13" r="1.5"/>
+  </g>
+  </g>
+  <!-- Badge for the "Accessibility missing" menu bar image only: a dot of
+       radius 3 in the bottom-right corner, twice a dot's size. -->
+  <circle id="badge" cx="14.5" cy="14.5" r="3" fill="#000"/>
+  <!-- Problem mark for the "config or shortcut problem" menu bar image
+       only, in the bottom-right corner instead of the badge: a filled
+       disc with an exclamation mark cut out of it, like a warning sign.
+       It is larger than the badge, so it sits 0.5 further in: centre
+       (14, 14), radius 3.9, which keeps its edge 0.1 inside the icon
+       (14 + 3.9 = 17.9). The cleared ring grows with it to radius 4.5
+       (a 0.6 gap) and so nicks the two dots next to the corner. The mark
+       is a rounded bar 1.5 wide and 3.8 tall over a dot of radius 0.82.
+       To render MenuBarIconProblem, change the clearing circle in the
+       "clearing" mask to
+         <circle cx="14" cy="14" r="4.5" fill="#000"/>
+       and replace the badge circle with
+         <mask id="bang"><rect width="18" height="18" fill="#fff"/>
+           <rect x="13.25" y="11.2" width="1.5" height="3.8" rx="0.75" fill="#000"/>
+           <circle cx="14" cy="16.3" r="0.82" fill="#000"/></mask>
+         <circle id="problem" cx="14" cy="14" r="3.9" fill="#000" mask="url(#bang)"/> -->
+</svg>

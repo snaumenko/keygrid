@@ -1,0 +1,36 @@
+# Builds and tests on every push to main and every pull request.
+# Runs on a GitHub-hosted macOS runner, which has Xcode, so `make test`
+# needs none of the Command-Line-Tools-only flags from the Makefile.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Toolchain
+        run: |
+          xcode-select -p
+          swift --version
+
+      - name: Test
+        run: make test
+
+      - name: Bundle
+        run: make bundle
+
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: KeyGrid.app
+          path: dist/KeyGrid.app
+          if-no-files-found: error

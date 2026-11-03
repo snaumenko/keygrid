@@ -1,0 +1,27 @@
+# Dependabot configuration: GitHub opens a pull request when something
+# listed here has a newer version. Security-advisory pull requests are a
+# separate repository setting (Settings → Code security), not controlled
+# by this file.
+#
+# KeyGrid has no package dependencies, and the hard rules in AGENTS.md
+# (CLAUDE.md is a symlink to it) forbid adding any. What it does depend
+# on is the GitHub Actions that build and test it in
+# .github/workflows/ci.yml (actions/checkout and actions/upload-artifact).
+# Those are pinned to a major version, so the github-actions entry opens
+# a pull request when a new major version is released.
+#
+# The swift entry finds nothing while Package.swift lists no packages. It
+# is a tripwire: if a package dependency is ever added, Dependabot opens
+# pull requests for its updates, which makes the dependency visible in
+# the repository history.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: monthly
