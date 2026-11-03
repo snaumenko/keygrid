@@ -46,7 +46,8 @@ library, which is the shape SwiftPM tests most simply.
    and the rules are checked (every shortcut
    has at least one modifier; no two shortcuts the same, across
    sections). A broken value produces a `ConfigError` that names the JSON
-   field, for example `dock.modifiers: "1" is not a modifier`,
+   field, for example `version: 2 is not supported; this KeyGrid reads
+   version 1` (checked first), `dock.modifiers: "1" is not a modifier`,
    `grid.size: 7 is not one of 6, 12, 18, 24, 30, 36`,
    `grid.columns was replaced by grid.size; remove grid.columns`,
    `window.topHalf was replaced by window.sweepUp and window.sweepDown;
@@ -79,9 +80,13 @@ config grows by section: V1 has `dock`; V2 adds `window`; V3 adds
 `grid`. Each section adds its hotkeys to `allHotkeys` under its own
 labels (`dock.3`, `window.leftHalf`, `grid.hotkey`), and the
 duplicate check in step 3 is where two sections binding the same key is
-caught. The `version` field is written and not checked; a check and
-migrations come with the decision to freeze the file format. Until then
-an old file is deleted or edited by hand.
+caught. The file format is frozen at `version` 1 (`Config.fileVersion`)
+since 1.0.0. A missing `version` reads as 1; any other number is refused
+before the other fields are read, since they may mean something else in
+that format. Under version 1 a key may be added only when a file without
+it keeps its meaning; a rename, removal or change of meaning raises the
+number. There are no migrations: a file of another version is edited by
+hand.
 
 ## How a hotkey travels
 

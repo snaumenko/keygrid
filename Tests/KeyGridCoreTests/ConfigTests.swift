@@ -311,11 +311,39 @@ private func decode(_ json: String) throws -> Config {
         #expect(try decode(#"{"dock":{"modifiers":"cmd+command"}}"#).dockModifiers == .cmd)
     }
 
-    // The version field is decoded but not checked; a check arrives with
-    // the decision to freeze the file format. Whoever adds it must change
-    // this test on purpose.
-    @Test func versionIsNotYetChecked() throws {
-        #expect(try decode(#"{"version":99,"dock":{}}"#).dockEnabled == true)
+    // The file format is frozen at version 1: version 1 and a file with
+    // no version key load; any other number is refused before the rest of
+    // the file is read, even when the rest is valid.
+    @Test func versionOneAndNoVersionLoad() throws {
+        #expect(try decode(#"{"version":1,"dock":{}}"#).dockEnabled == true)
+        #expect(try decode(#"{"dock":{}}"#).dockEnabled == true)
+    }
+
+    @Test func otherVersionsAreRefused() {
+        for version in [0, 2, 99, -1] {
+            #expect(throws: ConfigError.unsupportedVersion(version, supported: 1)) {
+                try decode(#"{"version":\#(version),"dock":{}}"#)
+            }
+        }
+    }
+
+    // The version check runs before any other rule, so a file of another
+    // format reports its version, not a field this build misreads.
+    @Test func versionIsCheckedBeforeOtherFields() {
+        #expect(throws: ConfigError.unsupportedVersion(2, supported: 1)) {
+            try decode(#"{"version":2,"dock":{"modifiers":"nonsense"}}"#)
+        }
+    }
+
+    @Test func unsupportedVersionMessage() {
+        #expect(ConfigError.unsupportedVersion(2, supported: 1).description
+                == "version: 2 is not supported; this KeyGrid reads version 1")
+    }
+
+    // `defaultJSON` writes the version this build reads.
+    @Test func defaultJSONWritesFileVersion() throws {
+        let file = try JSONDecoder().decode(ConfigFile.self, from: Data(Config.defaultJSON.utf8))
+        #expect(file.version == Config.fileVersion)
     }
 }
 
